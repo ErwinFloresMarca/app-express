@@ -120,5 +120,18 @@ module.exports = {
           config.optimization.runtimeChunk('single')
         }
       )
+  },
+  pluginOptions: {
+    electronBuilder: {
+      builderOptions: {
+        productName: 'App Inventarios.',
+        nsis: {
+          allowElevation: false,
+          allowToChangeInstallationDirectory: true,
+          oneClick: false,
+          perMachine: true
+        }
+      }
+    }
   }
 }
