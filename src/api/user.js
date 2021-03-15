@@ -1,5 +1,13 @@
 import request from '@/utils/request'
 
+import resource from './resource'
+
+class UserResource extends resource {
+  constructor() {
+    super('user')
+  }
+}
+
 export function login(data) {
   return request('auth-login', data)
 }
@@ -13,3 +21,5 @@ export function logout() {
     resolve({})
   })
 }
+
+export default new UserResource()

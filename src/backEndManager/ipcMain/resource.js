@@ -1,15 +1,21 @@
 const response = require('./utils/response')
 class resource {
-  constructor(modelName, permisions = []) {
+  constructor(modelName, permissions = []) {
     this.modelName = modelName
-    this.permisions = ['list', 'get', 'store', 'update', 'destroy']
-    this.permisions.concat(permisions)
+    this.permissions = ['list', 'get', 'store', 'update', 'destroy']
+    this.permissions.concat(permissions)
     this.Model = require(`./../database/models/${modelName}`)
     this.checkPermissions()
   }
   list(query = {}, paginate = { paginate: false }) {
-    return this.Model.paginate(query, paginate).then(docs => {
-      return response.success(docs)
+    return this.Model.paginate(query, paginate).then(async docs => {
+      const list = (await docs.docs.map(doc => {
+        return doc._doc
+      }))
+      var res = { ...docs }
+      res.docs = list
+      res = JSON.parse(JSON.stringify(res))
+      return response.success(res)
     }).catch(err => {
       console.log(err)
       return response.error('algo salio mal')
@@ -45,9 +51,10 @@ class resource {
   }
   addingListeners(ipcMain) {
   }
-  validPermision(args, permision) {
-    if (this.permisions.includes(permision)) {
-      if (args.user.permisions.includes(`${this.modelName}_${permision}`)) {
+  validPermision(args, permission) {
+    if (args.user.roles.includes('admin')) return true
+    if (this.permissions.includes(permission)) {
+      if (args.user.permissions.includes(`${this.modelName}_${permission}`)) {
         return true
       } else {
         return false
@@ -79,7 +86,7 @@ class resource {
       if (!app.validPermision(args, 'store')) {
         return response.error('No tiene los permisos validos')
       }
-      return response.success(await this.store(args.data))
+      return response.success(await this.store(args.data.data))
     })
     // update Listener
     syncListener(`${this.modelName}-update`, async(args) => {
