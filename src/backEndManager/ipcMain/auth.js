@@ -1,32 +1,27 @@
+/* eslint-disable */
 const response = require('./utils/response')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+
+const JWT_KEY = 'secret_key'
+
 class auth {
   constructor() {
     this.USER = require('../database/models/user')
-    const R = require('./resource')
-    this.roleResource = new R('role')
-    this.permissionResource = new R('permission')
+    this.ROLE = require('../database/models/role')
   }
-  login(username, password) {
-    this.USER.findOne({ username: username }).then(doc => {
+  login(name, password) {
+    const app = this
+    return this.USER.findOne({ name: name }).then(doc => {
       if (doc !== null) {
         return bcrypt.compare(password, doc.password).then(async function(result) {
           if (!result) {
             return response.error('la contraseña es incorrecta.')
           }
-          const role = await this.roleResource.findById(doc.role, (err, r) => {
-            if (err) {
-              console.log(err)
-              return false
-            }
-            return r
+          const user = await app.getUser(doc._id)
+          return response.success({
+            token: app.genToken(user)
           })
-          const resp = {
-            username: doc.username,
-            role: role,
-            permissions: role.permissions
-          }
-          return response.success(resp)
         })
       } else {
         return response.error('El nombre de usuario no es correcto.')
@@ -36,12 +31,61 @@ class auth {
       return response.error('los credenciales son incorrectos')
     })
   }
+  info(token) {
+    var user = this.docodeToken(token)
+    user.introduction = 'example'
+    return response.success(JSON.parse(JSON.stringify(user)));
+  }
+  getUser(id) {
+    const app = this
+    return this.USER.findById(id).then(async doc => {
+      if (doc !== null) {
+        const roles = (await app.ROLE.find({ 'name': { '$in' : doc.roles }}, (err, list) => {
+          if (err) {
+            console.log(err)
+            return []
+          }
+          return list
+        }))
+        const resp = {
+          id: doc._id,
+          name: doc.name,
+          roles: roles.map(role => {
+            return role.name
+          }),
+          permissions: roles.reduce((arr, role) => {
+            role.permissions.forEach(element => {
+              if (!arr.includes(element)) {
+                arr.push(element)
+              }
+            })
+            return arr
+          }, [])
+        }
+        return resp
+      }
+      return null
+    }).catch(err => {
+      console.log(err)
+      return response.error('El id es incorrecto')
+    })
+  }
+  genToken(user) {
+    return jwt.sign(user, JWT_KEY)
+  }
+  docodeToken(token) {
+    return jwt.verify(token, JWT_KEY)
+  }
   listen() {
     const { ipcMain } = require('electron')
     const app = this
     // login listener
-    ipcMain.handle(`login`, async(e, args) => {
-      return app.login(args.username, args.password)
+    ipcMain.handle(`auth-login`, async(e, args) => {
+      const data = await app.login(args.data.username, args.data.password)
+      return data
+    })
+    ipcMain.handle(`auth-info`, async(e, args) => {
+      return await this.info(args.token)
     })
   }
 }

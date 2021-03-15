@@ -3,7 +3,7 @@ const Schema = mongoose.Schema
 const mongoosePaginate = require('mongoose-paginate-v2')
 
 const userSchema = new Schema({
-  username: {
+  name: {
     type: String,
     unique: true,
     default: null,
@@ -14,8 +14,8 @@ const userSchema = new Schema({
     default: null,
     require: true
   },
-  role: {
-    type: String,
+  roles: {
+    type: Array,
     default: null,
     require: true
   }

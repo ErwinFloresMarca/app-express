@@ -1,14 +1,16 @@
 module.exports = {
   success(data) {
     return {
-      status: 200,
+      code: 20000,
       data: data
     }
   },
   error(errmsn) {
     return {
-      status: 400,
-      msn: errmsn
+      code: 40000,
+      data: {
+        message: errmsn
+      }
     }
   }
 }

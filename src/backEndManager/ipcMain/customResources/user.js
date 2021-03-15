@@ -5,10 +5,13 @@ class user extends R {
     super('user')
   }
   store(data) {
+    const app = this
     return bcrypt.hash(data.password, 10).then(function(hash) {
       data.password = hash
-      const newRegister = new this.Model(data)
+      const newRegister = new app.Model(data)
       return newRegister.save()
+    }).catch(err => {
+      console.log(err)
     })
   }
 }

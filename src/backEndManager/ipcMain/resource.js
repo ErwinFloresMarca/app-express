@@ -58,41 +58,42 @@ class resource {
   }
   listen() {
     const { ipcMain } = require('electron')
+    const syncListener = require('./utils/icpMainMiddleware')
     const app = this
     // list listener
-    ipcMain.handle(`${this.modelName}-list`, async(e, args) => {
+    syncListener(`${this.modelName}-list`, async(args) => {
       if (!app.validPermision(args, 'list')) {
         return response.error('No tiene los permisos validos')
       }
-      return this.list(args.data.query, args.data.paginate)
+      return await this.list(args.data.query, args.data.paginate)
     })
     // get listener
-    ipcMain.handle(`${this.modelName}-get`, async(e, args) => {
+    syncListener(`${this.modelName}-get`, async(args) => {
       if (!app.validPermision(args, 'get')) {
         return response.error('No tiene los permisos validos')
       }
-      return this.get(args.data.id)
+      return this.get(await args.data.id)
     })
     // store Listener
-    ipcMain.handle(`${this.modelName}-store`, async(e, args) => {
+    syncListener(`${this.modelName}-store`, async(args) => {
       if (!app.validPermision(args, 'store')) {
         return response.error('No tiene los permisos validos')
       }
-      return response.success(this.store(args.data))
+      return response.success(await this.store(args.data))
     })
     // update Listener
-    ipcMain.handle(`${this.modelName}-update`, async(e, args) => {
+    syncListener(`${this.modelName}-update`, async(args) => {
       if (!app.validPermision(args, 'update')) {
         return response.error('No tiene los permisos validos')
       }
-      return this.update(args.data.id, args.data.data)
+      return await this.update(args.data.id, args.data.data)
     })
     // delete Listener
-    ipcMain.handle(`${this.modelName}-destroy`, async(e, args) => {
+    syncListener(`${this.modelName}-destroy`, async(args) => {
       if (!app.validPermision(args, 'destroy')) {
         return response.error('No tiene los permisos validos')
       }
-      return this.destroy(args.data.id)
+      return await this.destroy(args.data.id)
     })
     // add custom listeners
     this.addingListeners(ipcMain)
