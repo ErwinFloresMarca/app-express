@@ -21,21 +21,22 @@ class resource {
       return response.error('algo salio mal')
     })
   }
-  get(id = null) {
+  get(id) {
     return this.Model.findById(id).then(docs => {
-      return response.success(docs)
+      return response.success(JSON.parse(JSON.stringify(docs._doc)))
     }).catch(err => {
       console.log(err)
       return response.error('no se encontro el registro')
     })
   }
-  store(data) {
+  async store(data) {
     const newRegister = new this.Model(data)
-    return newRegister.save()
+    const res = await newRegister.save()
+    return response.success(JSON.parse(JSON.stringify(res)))
   }
   update(id, data) {
     return this.Model.findByIdAndUpdate(id, data).then(docs => {
-      return response.success(docs)
+      return response.success(docs._doc)
     }).catch(err => {
       console.log(err)
       return response.error('no se encontro el registro')
@@ -52,6 +53,7 @@ class resource {
   addingListeners(ipcMain) {
   }
   validPermision(args, permission) {
+    if (args.user === undefined) return false
     if (args.user.roles.includes('admin')) return true
     if (this.permissions.includes(permission)) {
       if (args.user.permissions.includes(`${this.modelName}_${permission}`)) {
@@ -83,7 +85,7 @@ class resource {
     })
     // store Listener
     syncListener(`${this.modelName}-store`, async(args) => {
-      if (!app.validPermision(args, 'store')) {
+      if (!(app.validPermision(args, 'store') || args.data.data.userByApi)) {
         return response.error('No tiene los permisos validos')
       }
       return response.success(await this.store(args.data.data))
@@ -112,15 +114,15 @@ class resource {
       'name': { $regex: '.*' + this.modelName + '.*' }
     }).then(docs => {
       if (docs.length === 0) {
-        app.genratePermissions(PERMISSION)
+        app.generatePermissions(PERMISSION)
       }
     }).catch(err => {
       console.log(err)
     })
   }
-  genratePermissions(PERMISSION) {
+  generatePermissions(PERMISSION) {
     const app = this
-    this.permisions.forEach(element => {
+    this.permissions.forEach(element => {
       const newPermission = new PERMISSION({
         name: `${app.modelName}_${element}`,
         description: `permiso para acceder a ${element} de ${app.modelName}`,

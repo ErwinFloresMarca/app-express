@@ -2,7 +2,7 @@ import resource from './resource'
 
 class ProductoResource extends resource {
   constructor() {
-    super('producto')
+    super('product')
   }
 }
 

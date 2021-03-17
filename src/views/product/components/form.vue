@@ -7,25 +7,20 @@
     @open="onOpen()"
   >
     <el-form>
-      <el-form-item prop="name">
-        <MdInput v-model="user.name" type="text" icon="edit">Nombre de Usuario</MdInput>
+      <el-form-item prop="nombre">
+        <MdInput v-model="product.nombre" type="text" icon="edit">Nombre de Usuario</MdInput>
       </el-form-item>
-      <el-form-item prop="password">
-        <MdInput v-model="user.password" type="password" icon="edit">Contraseña</MdInput>
+      <el-form-item prop="precio">
+        <MdInput v-model="product.precio" type="number" icon="edit">Precio</MdInput>
       </el-form-item>
-      <el-form-item prop="confirm_password">
-        <MdInput v-model="user.confirm_password" type="password" icon="edit">Confirmar Contraseña</MdInput>
+      <el-form-item prop="total">
+        <MdInput v-model="product.total" type="number" icon="edit">Cantidad Total</MdInput>
       </el-form-item>
-      <el-form-item prop="roles">
-        <el-select v-model="user.roles" placeholder="seleccione roles" clearable multiple>
-          <el-option
-            v-for="role in rolesList"
-            :key="role.name"
-            :label="role.label"
-            :value="role.name"
-          />
-        </el-select>
-
+      <el-form-item prop="foto">
+        Subir Archivo
+      </el-form-item>
+      <el-form-item prop="cod_barras">
+        Leer codigo de barras
       </el-form-item>
     </el-form>
     <span slot="footer">
@@ -36,11 +31,10 @@
 </template>
 
 <script>
-import userResource from '@/api/user'
-import roleResource from '@/api/role'
+import productResource from '@/api/product'
 import MdInput from '@/components/MDinput'
 export default {
-  name: 'UserForm',
+  name: 'ProductForm',
   components: { MdInput },
   props: {
     value: {
@@ -56,7 +50,7 @@ export default {
   },
   data() {
     return {
-      user: {},
+      product: {},
       rolesList: [],
       error: null,
       formErrors: {}
@@ -77,31 +71,20 @@ export default {
     }
   },
   created() {
-    this.getRoles()
   },
   methods: {
-    getRoles() {
-      const app = this
-      roleResource.list({}, { pagination: false }).then(resp => {
-        app.rolesList = resp.data.docs
-        console.log(resp)
-      }).catch(err => {
-        console.log(err)
-        this.error = err
-      })
-    },
-    restenComponent() {
+    resetComponent() {
       this.error = null
-      this.user = {}
+      this.product = {}
       this.value.id = null
     },
     handleCancel() {
       this.value.show = false
       this.$emit('cancel')
-      this.restenComponent()
+      this.resetComponent()
     },
     handleConfirm() {
-      if (this.user.password !== this.user.confirm_password) {
+      if (this.product.password !== this.product.confirm_password) {
         this.$message({
           message: 'Las contraseñas no son iguales.',
           type: 'warning',
@@ -112,12 +95,12 @@ export default {
       }
       const app = this
       if (this.value.id) {
-        userResource.update(this.value.id, this.user)
+        productResource.update(this.value.id, this.product)
           .then((data) => {
             app.onSuccess(data)
             app.$message({
               showClose: true,
-              message: 'user, actualizada exitosamente.',
+              message: 'product, actualizada exitosamente.',
               type: 'success'
             })
             app.value.show = false
@@ -126,12 +109,12 @@ export default {
             app.error = err
           })
       } else {
-        userResource.store(this.user)
+        productResource.store(this.product)
           .then((data) => {
             app.onSuccess(data)
             app.$message({
               showClose: true,
-              message: 'user, Creada exitosamente.',
+              message: 'product, Creada exitosamente.',
               type: 'success'
             })
             app.value.show = false
@@ -143,13 +126,13 @@ export default {
     },
     onSuccess(data) {
       this.$emit('on-success', data)
-      this.restenComponent()
+      this.resetComponent()
     },
     onOpen() {
       const app = this
       if (this.value.id) {
-        userResource.get(this.value.id).then((data) => {
-          app.user = data.data
+        productResource.get(this.value.id).then((data) => {
+          app.product = data.data
         }).catch((error) => {
           app.error = error
         })

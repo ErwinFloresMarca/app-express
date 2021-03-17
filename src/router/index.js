@@ -8,6 +8,7 @@ import Layout from '@/layout'
 
 // /* Router Modules */
 import userRouter from './modules/user'
+import productRouter from './modules/product'
 // import chartsRouter from './modules/charts'
 // import tableRouter from './modules/table'
 // import nestedRouter from './modules/nested'
@@ -107,6 +108,7 @@ export const asyncRoutes = [
 
   /** when your routing map is too long, you can split it into small modules **/
   userRouter,
+  productRouter,
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]
@@ -114,7 +116,7 @@ export const asyncRoutes = [
 const createRouter = () => new Router({
   // mode: 'history', // require service support
   scrollBehavior: () => ({ y: 0 }),
-  routes: constantRoutes.concat(asyncRoutes)
+  routes: constantRoutes
 })
 
 const router = createRouter()

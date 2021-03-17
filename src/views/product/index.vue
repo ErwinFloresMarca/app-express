@@ -1,7 +1,7 @@
 <template>
   <el-container style="padding: 10px" direction="vertical">
     <el-header height="">
-      LISTA DE USUARIOS
+      LISTA DE PRODUCTOS
     </el-header>
     <el-container direction="vertical">
       <div class="filter-container">
@@ -44,14 +44,32 @@
           label="ID"
         />
         <el-table-column
-          prop="name"
-          label="Name"
+          prop="nombre"
+          label="Nombre"
         />
         <el-table-column
-          label="Name"
+          prop="precio"
+          label="Precio"
+        />
+        <el-table-column
+          prop="total"
+          label="Total"
+        />
+        <el-table-column
+          prop="foto"
+          label="Imagen"
+        />
+        <el-table-column
+          label="Valoracion"
         >
-          <template slot-scope="scope">
-            <el-tag v-for="role in scope.row.roles" :key="role" type="default" size="mini" effect="dark" :closable="false">{{ role }}</el-tag>
+          <template slot-scope="{ row }">
+            <el-rate
+              v-model="row.valoracion"
+              disabled
+              show-score
+              text-color="#ff9900"
+              score-template="{value} puntos"
+            />
           </template>
         </el-table-column>
         <el-table-column
@@ -64,28 +82,28 @@
         </el-table-column>
       </el-table>
 
-      <pagination v-show="paginate.total>0" :total="paginate.total" :page.sync="paginate.page" :limit.sync="paginate.limit" @pagination="getUsers" />
+      <pagination v-show="paginate.total>0" :total="paginate.total" :page.sync="paginate.page" :limit.sync="paginate.limit" @pagination="getproducts" />
 
-      <user-form v-model="userForm" @on-success="onSuccessForm" />
+      <product-form v-model="productForm" @on-success="onSuccessForm" />
     </el-container>
   </el-container>
 </template>
 
 <script>
-import userResource from '@/api/user'
+import productResource from '@/api/product'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-import userForm from './components/form'
+import productForm from './components/form'
 export default {
-  name: 'ListUser',
+  name: 'ListProduct',
   components: {
     Pagination,
-    userForm
+    productForm
   },
   directives: { waves },
   data() {
     return {
-      userForm: {
+      productForm: {
         show: false
       },
       keyword: '',
@@ -98,12 +116,12 @@ export default {
     }
   },
   created() {
-    this.getUsers()
+    this.getproducts()
   },
   methods: {
-    getUsers() {
+    getproducts() {
       const app = this
-      userResource.list({}, this.paginate).then(res => {
+      productResource.list({}, this.paginate).then(res => {
         app.list = res.data.docs
         app.paginate.total = res.data.totalDocs
         app.paginate.page = res.data.page
@@ -116,16 +134,16 @@ export default {
       this.getList()
     },
     handleCreate() {
-      this.userForm.show = true
+      this.productForm.show = true
     },
-    handleEdit(user) {
-      this.userForm.id = user._id
-      this.userForm.show = true
+    handleEdit(product) {
+      this.productForm.id = product._id
+      this.productForm.show = true
     },
-    handleDelete(user) {
+    handleDelete(product) {
       const app = this
-      userResource.destroy(user._id).then(doc => {
-        app.getUsers()
+      productResource.destroy(product._id).then(doc => {
+        app.getproducts()
         app.$message({
           message: 'Usuario eliminado.',
           type: 'success',
@@ -143,7 +161,7 @@ export default {
       })
     },
     onSuccessForm() {
-      this.getUsers()
+      this.getproducts()
     }
   }
 }

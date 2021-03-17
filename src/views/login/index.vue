@@ -75,21 +75,24 @@
 
 <script>
 import { validUsername } from '@/utils/validate'
+import { validEmail } from '@/utils/validate'
 import SocialSign from './components/SocialSignin'
-
+import customer from '@/api/axiosApi/customer'
+import { login } from '@/api/user'
+import userResource from '@/api/user'
 export default {
   name: 'Login',
   components: { SocialSign },
   data() {
     const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
+      if (!(validUsername(value) || validEmail(value))) {
         callback(new Error('Please enter the correct user name'))
       } else {
         callback()
       }
     }
     const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
+      if (value.length < 3) {
         callback(new Error('The password can not be less than 6 digits'))
       } else {
         callback()
@@ -156,19 +159,60 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$store.dispatch('user/login', this.loginForm)
-            .then(() => {
-              this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
-              this.loading = false
-            })
-            .catch(() => {
-              this.loading = false
-            })
+          this.loginInApi(this.loginForm.username, this.loginForm.password)
         } else {
           console.log('error submit!!')
           return false
         }
       })
+    },
+    loginInApi(name, password) {
+      const app = this
+      customer.tokenStore({
+        email: name,
+        password: password
+      }).then(resp => {
+        login({ username: name, password: password }).then(doc => {
+          app.loginInApp()
+        }).catch(err => {
+          console.log(err)
+          userResource.store({
+            name: name,
+            password: password,
+            userByApi: true
+          }).then(doc => {
+            app.loginInApp()
+          }).catch(err => {
+            console.log('No se pudo registrar el usuario', err)
+          })
+        })
+      }).catch(err => {
+        console.log(err)
+        this.$message({
+          message: err.message,
+          type: 'warning',
+          showClose: true,
+          duration: 3000
+        })
+        app.loginInApp()
+      })
+    },
+    loginInApp() {
+      const app = this
+      this.$store.dispatch('user/login', this.loginForm)
+        .then(() => {
+          app.$router.push({ path: this.redirect || '/', query: this.otherQuery })
+          this.loading = false
+        }).catch(err => {
+          this.loading = false
+          console.log(err)
+          this.$message({
+            message: err,
+            type: 'error',
+            showClose: true,
+            duration: 3000
+          })
+        })
     },
     getOtherQuery(query) {
       return Object.keys(query).reduce((acc, cur) => {
