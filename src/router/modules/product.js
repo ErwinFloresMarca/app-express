@@ -19,6 +19,12 @@ const productRouter = {
       component: () => import('@/views/product'),
       name: 'ProductsList',
       meta: { title: 'Lista de Productos', noCache: true }
+    },
+    {
+      path: 'test',
+      component: () => import('@/views/product/pruebaBarcode'),
+      name: 'ProductTestBarcodeReader',
+      meta: { title: 'Barcode Reader Test', noCache: true }
     }
   ]
 }

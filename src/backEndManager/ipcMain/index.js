@@ -1,5 +1,6 @@
 const R = require('./resource')
 const UserResource = new (require('./customResources/user'))()
+const BarCodeReader = require('./customResources/barcodeReader')
 const RoleResource = new R('role')
 const ProductResource = new R('product')
 const PermissionResource = new R('permission')
@@ -11,5 +12,6 @@ module.exports = {
     RoleResource.listen()
     PermissionResource.listen()
     ProductResource.listen()
+    BarCodeReader.listen()
   }
 }

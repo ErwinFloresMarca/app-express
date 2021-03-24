@@ -32,7 +32,7 @@ class auth {
     })
   }
   info(token) {
-    var user = this.docodeToken(token)
+    var user = this.decodeToken(token)
     user.introduction = 'example'
     return response.success(JSON.parse(JSON.stringify(user)));
   }
@@ -73,7 +73,7 @@ class auth {
   genToken(user) {
     return jwt.sign(user, JWT_KEY)
   }
-  docodeToken(token) {
+  decodeToken(token) {
     return jwt.verify(token, JWT_KEY)
   }
   listen() {

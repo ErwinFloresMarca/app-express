@@ -66,7 +66,6 @@ class resource {
     }
   }
   listen() {
-    const { ipcMain } = require('electron')
     const syncListener = require('./utils/icpMainMiddleware')
     const app = this
     // list listener
@@ -105,7 +104,7 @@ class resource {
       return await this.destroy(args.data.id)
     })
     // add custom listeners
-    this.addingListeners(ipcMain)
+    this.addingListeners(syncListener)
   }
   checkPermissions() {
     const PERMISSION = require('../database/models/permission')

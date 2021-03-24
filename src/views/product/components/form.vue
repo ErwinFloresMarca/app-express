@@ -21,6 +21,7 @@
       </el-form-item>
       <el-form-item prop="cod_barras">
         Leer codigo de barras
+        <MdInput v-model="product.cod_barras" type="number" icon="edit">Codigo de Barras</MdInput>
       </el-form-item>
     </el-form>
     <span slot="footer">
